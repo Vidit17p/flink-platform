@@ -1,0 +1,7 @@
+apiVersion: v2
+name: flink-platform
+description: A Helm chart for flink platform built around the Apache Flink Kubernetes Operator
+type: application
+version: 0.1.0
+flinkOperatorVersion: 1.9.0
+

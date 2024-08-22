@@ -1,0 +1,15 @@
+proxy:
+  image:
+    repository: prox
+    tag: latest
+    pullPolicy: IfNotPresent
+  flink_operator_ServiceAccount: flink-operator
+  affinity: {}
+  tolerations: {}
+  extraEnv: 
+    BASIC_USERNAME: flink
+    BASE_URL: http://localhost:8000  ## USED in NODEJS APP
+  extraSecretEnv:
+    BASIC_PASSWORD: ChangeMe
+  
+    

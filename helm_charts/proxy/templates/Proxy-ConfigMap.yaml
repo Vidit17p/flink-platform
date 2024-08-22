@@ -1,0 +1,39 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: nginx-conf
+  namespace: {{ .Release.Namespace }}
+data:
+  nginx-basic-auth.conf: |-
+    server {
+      listen 80 default_server;
+      
+      location / {
+        auth_basic             "Restricted";
+        auth_basic_user_file   .htpasswd;
+        proxy_pass             http://127.0.0.1:3000;
+        proxy_read_timeout     900;
+      }
+
+      location = /cluster {
+          auth_basic             "Restricted";
+          auth_basic_user_file   .htpasswd;
+          proxy_pass             http://127.0.0.1:3000/cluster;
+          proxy_read_timeout     900;
+      }
+
+      location /pods {
+          auth_basic             "Restricted";
+          auth_basic_user_file   .htpasswd;
+          proxy_pass             http://127.0.0.1:3000/pods;
+          proxy_read_timeout     900;
+      }
+
+      location ~* /cluster/([^/]+)(/.*) {
+        resolver kube-dns.kube-system.svc.cluster.local;
+        auth_basic             "Restricted";
+        auth_basic_user_file   .htpasswd;
+        proxy_pass http://$1-rest.{{ .Release.Namespace }}.svc.cluster.local:8081$2;  
+        proxy_read_timeout     900;
+      }
+    }
