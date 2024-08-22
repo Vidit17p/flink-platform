@@ -1,0 +1,37 @@
+# apiVersion: operator.victoriametrics.com/v1beta1                                                                                                                                            
+# kind: VMPodScrape                                                                                                                                                                           
+# metadata:                                                                                                                                                                                   
+#   name: operator-pod-scrape                                                                                                                                            
+# spec:                                                                                                                                                                                       
+#   namespaceSelector:                                                                                                                                                                        
+#     matchNames:                                                                                                                                                                             
+#     - flink                                                                                                                                                                        
+#   podMetricsEndpoints:                                                                                                                                                                      
+#   - honorLabels: true                                                                                                                                                                       
+#     interval: 15s                                                                                                                                                                           
+#     path: /metrics                                                                                                                                                                          
+#     port: metrics                                                                                                                                                               
+#   selector:                                                                                                                                                                                 
+#     matchLabels:                                                                                                                                                                                                                                                                                                                        
+#       app.kubernetes.io/name: flink-kubernetes-operator
+
+# ---
+# apiVersion: operator.victoriametrics.com/v1beta1                                                                                                                                            
+# kind: VMPodScrape                                                                                                                                                                           
+# metadata:                                                                                                                                                                                   
+#   name: flink-cluster-scraper                                                                                                                                            
+# spec:     
+#   namespaceSelector:                                                                                                                                                                        
+#     matchNames:                                                                                                                                                                             
+#     - flink 
+#   podMetricsEndpoints:                                                                                                                                                                      
+#   - honorLabels: true                                                                                                                                                                       
+#     interval: 15s                                                                                                                                                                           
+#     path: /metrics                                                                                                                                                                          
+#     port: metrics                                                                                                                                                               
+#   selector:                                                                                                                                                                                 
+#     matchLabels:                                                                                                                                                                                                                                                                                                                        
+#       service: flink-cluster 
+
+
+

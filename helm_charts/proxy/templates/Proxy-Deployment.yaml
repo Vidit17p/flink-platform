@@ -1,0 +1,55 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: nginx-proxy
+  name: nginx-proxy
+  namespace: {{ .Release.Namespace }}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: "nginx-proxy"
+  template:
+    metadata:
+      labels:
+        app: nginx-proxy
+      annotations:
+        checksum/nginx_config: {{ .Values.proxy.nginx_config | toYaml | sha256sum }}
+    spec:
+      serviceAccount: {{ .Values.proxy.flink_operator_ServiceAccount }}
+      serviceAccountName: {{ .Values.proxy.flink_operator_ServiceAccount }}
+      volumes:
+        - name: nginx-conf
+          configMap:
+            name: nginx-conf
+      containers:
+      - name: nginx-proxy
+        image: {{ .Values.proxy.image.repository }}:{{ .Values.proxy.image.tag }}
+        imagePullPolicy: {{ .Values.proxy.image.pullPolicy }}
+        ports:
+        - containerPort: 80
+        {{- if .Values.proxy.extraEnv }}
+        env:
+          - name: NAMESPACE
+            value: {{ .Release.Namespace }}
+          {{- range $key, $value := .Values.proxy.extraEnv }}
+          - name: {{ $key | quote}}
+            value: {{ $value | quote }}
+          {{- end }}
+        {{- end }}
+        volumeMounts:
+        - name: nginx-conf
+          mountPath: /nginx-basic-auth.conf
+          subPath: nginx-basic-auth.conf
+        envFrom:
+          - secretRef:
+              name: proxy-secret
+        command: ["/bin/sh"]
+        args: ["-c", " ./run.sh"]
+      {{- if .Values.proxy.affinity }}
+      affinity: {{ .Values.proxy.affinity }}
+      {{- end }}
+      {{- if .Values.proxy.tolerations }}
+      tolerations: {{ .Values.proxy.tolerations }}
+      {{- end }}
