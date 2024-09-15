@@ -1,0 +1,37 @@
+repositories:
+  - name: karpenter
+    url: public.ecr.aws/karpenter
+    oci: true
+  - name: flink-kubernetes-operator
+    url: https://downloads.apache.org/flink/flink-kubernetes-operator-1.9.0/
+  - name: minio
+    url: https://charts.bitnami.com/bitnami
+releases:
+  - name: flink-kubernetes-operator
+    chart: flink-kubernetes-operator/flink-kubernetes-operator
+    namespace: flink
+    createNamespace: true
+    disableValidation: true
+    version: v1.9.0
+    wait: true
+    values:
+      - ./flink-kubernetes-operator/values.yaml
+  - name: minio
+    chart: bitnami/minio
+    namespace: flink
+    createNamespace: true
+    disableValidation: true
+    version: 14.7.2
+    wait: true
+    # values:
+    #   - ./flink-kubernetes-operator/values.yaml
+  - name: proxy
+    chart: ./proxy/
+    namespace: flink
+    disableValidation: true
+    values:
+      - ./proxy/values.yaml
+    wait: true
+    needs:
+      - flink-kubernetes-operator
+      - minio
