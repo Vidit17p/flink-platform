@@ -1,6 +1,6 @@
 proxy:
   image:
-    repository: prox
+    repository: proxy
     tag: latest
     pullPolicy: IfNotPresent
   flink_operator_ServiceAccount: flink-operator
