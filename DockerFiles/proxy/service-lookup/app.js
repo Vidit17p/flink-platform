@@ -4,13 +4,13 @@ const app = express();
 const port = 3000;
 
 // Define the base URL as a global variable
-// const BASE_URL = "http://localhost:3000";
-// const NAMESPACE = "flink";
+const BASE_URL = "http://localhost:3000";
+const NAMESPACE = "flink";
 
 
 // TODO = REPLACE with process.env.BASE_URL
-const NAMESPACE = process.env.NAMESPACE;
-const BASE_URL = process.env.BASE_URL;
+// const NAMESPACE = process.env.NAMESPACE;
+// const BASE_URL = process.env.BASE_URL;
 
 
 app.get('/', (req, res) => {
@@ -25,7 +25,7 @@ app.get('/', (req, res) => {
             <body>
                 <h1> <a href="${BASE_URL}/cluster">Clusters</a> </h1>
                 <h1> <a href="${BASE_URL}/pods">Pods</a>  </h1>
-                <h1> <a href="${BASE_URL}/cluster-info">Cluster-Info</a>  </h1>
+                <h1> <a href="${BASE_URL}/flink-dep">Flink Deployments</a>  </h1>
             </body>
             <footer>
                 <p style="color:white"> VklESVQtUEFURUwt </p>
@@ -100,7 +100,7 @@ app.get('/cluster', (req, res) => {
     });
 });
 
-app.get('/cluster-info', (req, res) => {
+app.get('/flink-dep', (req, res) => {
     const queryParams = req.query;
     let command;
     if ('clusterName' in queryParams) {
@@ -124,7 +124,7 @@ app.get('/cluster-info', (req, res) => {
                 res.status(500).send(`Error: ${stderr}`);
                 return;
             }
-            res.send(`<h1>${queryParams['clusterName']}</h1><pre>${stdout}</pre><footer><a href="${BASE_URL}/cluster-info">back</a></footer>`);
+            res.send(`<h1>${queryParams['clusterName']}</h1><pre>${stdout}</pre><footer><a href="${BASE_URL}/flink-dep">back</a></footer>`);
         });
     } else {
         command = ` kubectl get flinkdep -n ${NAMESPACE} | awk '{print $1}' |  tail -n +2`
@@ -145,7 +145,7 @@ app.get('/cluster-info', (req, res) => {
             const lines = stdout.split('\n').map(line => line.replace('', ''));
             const links = lines.map(line => {
                 if (line.trim() !== '') {
-                    return `<a href="${BASE_URL}/cluster-info?clusterName=${encodeURIComponent(line.trim())}">${line.trim()}</a>`;
+                    return `<a href="${BASE_URL}/flink-dep?clusterName=${encodeURIComponent(line.trim())}">${line.trim()}</a>`;
                 }
                 return '';
             }).join('<br>');
