@@ -1,0 +1,59 @@
+Spec:
+  Flink Configuration:
+    taskmanager.numberOfTaskSlots:  2
+  Flink Version:                    v1_17
+  Image:                            flink:1.17
+  Job:
+    Args:
+    Jar URI:       local:///opt/flink/examples/streaming/StateMachineExample.jar
+    Parallelism:   2
+    Upgrade Mode:  stateless
+  Job Manager:
+    Replicas:  1
+    Resource:
+      Cpu:     1
+      Memory:  2048m
+  Pod Template:
+    Spec:
+      Containers:
+        Name:  flink-main-container
+        Volume Mounts:
+          Mount Path:  /opt/flink/log
+          Name:        flink-logs
+      Volumes:
+        Empty Dir:
+        Name:       flink-logs
+  Service Account:  flink
+  Task Manager:
+    Resource:
+      Cpu:     1
+      Memory:  2048m
+Status:
+  Cluster Info:
+    Flink - Revision:             c0027e5 @ 2023-11-09T13:24:38+01:00
+    Flink - Version:              1.17.2
+    Total - Cpu:                  2.0
+    Total - Memory:               4294967296
+  Job Manager Deployment Status:  READY
+  Job Status:
+    Checkpoint Info:
+      Last Periodic Checkpoint Timestamp:  0
+    Job Id:                                3681c31d6cb025ee505bc3a716608357
+    Job Name:                              State machine job
+    Savepoint Info:
+      Last Periodic Savepoint Timestamp:  0
+      Savepoint History:
+    Start Time:         1726670179581
+    State:              RUNNING
+    Update Time:        1726670242418
+  Lifecycle State:      STABLE
+  Observed Generation:  5
+  Reconciliation Status:
+    Last Reconciled Spec:      {"spec":{"job":{"jarURI":"local:///opt/flink/examples/streaming/StateMachineExample.jar","parallelism":2,"entryClass":null,"args":[],"state":"running","savepointTriggerNonce":null,"initialSavepointPath":null,"checkpointTriggerNonce":null,"upgradeMode":"stateless","allowNonRestoredState":null,"savepointRedeployNonce":null},"restartNonce":null,"flinkConfiguration":{"taskmanager.numberOfTaskSlots":"2"},"image":"flink:1.17","imagePullPolicy":null,"serviceAccount":"flink","flinkVersion":"v1_17","ingress":null,"podTemplate":{"spec":{"containers":[{"name":"flink-main-container","volumeMounts":[{"mountPath":"/opt/flink/log","name":"flink-logs"}]}],"volumes":[{"emptyDir":{},"name":"flink-logs"}]}},"jobManager":{"resource":{"cpu":1.0,"memory":"2048m","ephemeralStorage":null},"replicas":1,"podTemplate":null},"taskManager":{"resource":{"cpu":1.0,"memory":"2048m","ephemeralStorage":null},"replicas":null,"podTemplate":null},"logConfiguration":null,"mode":null},"resource_metadata":{"apiVersion":"flink.apache.org/v1beta1","metadata":{"generation":5},"firstDeployment":false}}
+    Last Stable Spec:          {"spec":{"job":{"jarURI":"local:///opt/flink/examples/streaming/StateMachineExample.jar","parallelism":2,"entryClass":null,"args":[],"state":"running","savepointTriggerNonce":null,"initialSavepointPath":null,"checkpointTriggerNonce":null,"upgradeMode":"stateless","allowNonRestoredState":null,"savepointRedeployNonce":null},"restartNonce":null,"flinkConfiguration":{"taskmanager.numberOfTaskSlots":"2"},"image":"flink:1.17","imagePullPolicy":null,"serviceAccount":"flink","flinkVersion":"v1_17","ingress":null,"podTemplate":{"spec":{"containers":[{"name":"flink-main-container","volumeMounts":[{"mountPath":"/opt/flink/log","name":"flink-logs"}]}],"volumes":[{"emptyDir":{},"name":"flink-logs"}]}},"jobManager":{"resource":{"cpu":1.0,"memory":"2048m","ephemeralStorage":null},"replicas":1,"podTemplate":null},"taskManager":{"resource":{"cpu":1.0,"memory":"2048m","ephemeralStorage":null},"replicas":null,"podTemplate":null},"logConfiguration":null,"mode":null},"resource_metadata":{"apiVersion":"flink.apache.org/v1beta1","metadata":{"generation":5},"firstDeployment":false}}
+    Reconciliation Timestamp:  1726068658904
+    State:                     DEPLOYED
+  Task Manager:
+    Label Selector:  component=taskmanager,app=pod-template-example
+    Replicas:        1
+Events:              <none>
