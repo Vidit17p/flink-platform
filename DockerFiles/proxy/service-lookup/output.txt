@@ -1,0 +1,63 @@
+Spec:
+  Flink Configuration:
+    taskmanager.numberOfTaskSlots:  2
+  Flink Version:                    v1_17
+  Image:                            flink:1.17
+  Job:
+    Args:
+    Jar URI:       local:///opt/flink/examples/streaming/StateMachineExample.jar
+    Parallelism:   2
+    State:         running
+    Upgrade Mode:  stateless
+  Job Manager:
+    Replicas:  1
+    Resource:
+      Cpu:     1
+      Memory:  2048m
+  Pod Template:
+    Spec:
+      Containers:
+        Name:  flink-main-container
+        Volume Mounts:
+          Mount Path:  /opt/flink/log
+          Name:        flink-logs
+      Volumes:
+        Empty Dir:
+        Name:       flink-logs
+  Service Account:  flink
+  Task Manager:
+    Resource:
+      Cpu:     1
+      Memory:  2048m
+Status:
+  Cluster Info:
+    Flink - Revision:             c0027e5 @ 2023-11-09T13:24:38+01:00
+    Flink - Version:              1.17.2
+    Total - Cpu:                  1.0
+    Total - Memory:               2147483648
+  Job Manager Deployment Status:  READY
+  Job Status:
+    Checkpoint Info:
+      Last Periodic Checkpoint Timestamp:  0
+    Job Id:                                e46c83834f28e10a5f3bf98ee22da27d
+    Job Name:                              State machine job
+    Savepoint Info:
+      Last Periodic Savepoint Timestamp:  0
+      Savepoint History:
+    Start Time:         1729369040498
+    State:              CREATED
+    Update Time:        1729369050120
+  Lifecycle State:      DEPLOYED
+  Observed Generation:  2
+  Reconciliation Status:
+    Last Reconciled Spec:      {"spec":{"job":{"jarURI":"local:///opt/flink/examples/streaming/StateMachineExample.jar","parallelism":2,"entryClass":null,"args":[],"state":"running","savepointTriggerNonce":null,"initialSavepointPath":null,"checkpointTriggerNonce":null,"upgradeMode":"stateless","allowNonRestoredState":null,"savepointRedeployNonce":null},"restartNonce":null,"flinkConfiguration":{"taskmanager.numberOfTaskSlots":"2"},"image":"flink:1.17","imagePullPolicy":null,"serviceAccount":"flink","flinkVersion":"v1_17","ingress":null,"podTemplate":{"spec":{"containers":[{"name":"flink-main-container","volumeMounts":[{"mountPath":"/opt/flink/log","name":"flink-logs"}]}],"volumes":[{"emptyDir":{},"name":"flink-logs"}]}},"jobManager":{"resource":{"cpu":1.0,"memory":"2048m","ephemeralStorage":null},"replicas":1,"podTemplate":null},"taskManager":{"resource":{"cpu":1.0,"memory":"2048m","ephemeralStorage":null},"replicas":null,"podTemplate":null},"logConfiguration":null,"mode":null},"resource_metadata":{"apiVersion":"flink.apache.org/v1beta1","metadata":{"generation":2},"firstDeployment":true}}
+    Reconciliation Timestamp:  1729369032064
+    State:                     DEPLOYED
+  Task Manager:
+    Label Selector:  component=taskmanager,app=pod-template-example-1
+    Replicas:        1
+Events:
+  Type    Reason            Age    From                  Message
+  ----    ------            ----   ----                  -------
+  Normal  Submit            3m1s   JobManagerDeployment  Starting deployment
+  Normal  JobStatusChanged  2m41s  Job                   Job status changed from RECONCILING to CREATED

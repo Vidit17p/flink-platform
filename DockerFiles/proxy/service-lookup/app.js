@@ -24,12 +24,9 @@ function getPodDetails(pod) {
     const age = `${days}d ${hours}h ${minutes}m`;
 
     // Get last restart time from containerStatuses
-    const lastContainerStatus = pod.status.containerStatuses[0]; // Assuming only one container
-    const lastRestartTime = lastContainerStatus.lastState.terminated ? 
-        new Date(lastContainerStatus.lastState.terminated.finishedAt) : null;
-
-    // Format last restart time
-    const formattedLastRestartTime = lastRestartTime ? lastRestartTime.toISOString() : "N/A";
+    const lastContainerStatus = pod.status.containerStatuses ? pod.status.containerStatuses[0] : null ;
+    const lastRestartTime = lastContainerStatus ? lastContainerStatus.lastState.terminated ? 
+        new Date(lastContainerStatus.lastState.terminated.finishedAt) : null : null;
 
     // Calculate age since last restart
     let ageSinceLastRestart = "N/A"; // Default value
@@ -44,7 +41,7 @@ function getPodDetails(pod) {
         ageSinceLastRestart = `${lastRestartDays}d ${lastRestartHours}h ${lastRestartMinutes}m`;
     }
 
-    return { age, formattedLastRestartTime, ageSinceLastRestart };
+    return { age, ageSinceLastRestart };
 }
 
 // API endpoint to get a list of pods
@@ -71,13 +68,15 @@ app.get('/api/pods', (req, res) => {
                 ||
                 (pod.metadata.labels && (pod.metadata.labels.component === 'taskmanager'))
             ).map(pod => {
-                const { age, formattedLastRestartTime ,ageSinceLastRestart} = getPodDetails(pod);
+                const restartCount = pod.status.containerStatuses && pod.status.containerStatuses.length > 0 ? pod.status.containerStatuses[0].restartCount : 0;
+                const resources = pod.spec.containers && pod.spec.containers.length > 0 ? pod.spec.containers[0].resources : {};
+                const { age ,ageSinceLastRestart} = getPodDetails(pod);
                 return {
                     name: pod.metadata.name,
                     status: pod.status.phase,
-                    num_restarts: pod.status.containerStatuses[0].restartCount,
+                    num_restarts: restartCount,
                     age,
-                    resources: pod.spec.containers[0].resources,
+                    resources: resources,
                     ageSinceLastRestart
                 };
             });
