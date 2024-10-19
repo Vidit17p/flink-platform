@@ -9,9 +9,47 @@ app.use(cors());
 const BASE_URL = process.env.BACKEND_BASE_URL || "http://localhost:3001"; // fallback value
 const NAMESPACE = process.env.NAMESPACE || "flink";               // fallback value
 
+function getPodDetails(pod) {
+    const creationTimestamp = new Date(pod.metadata.creationTimestamp);
+    const currentTime = new Date();
+    
+    // Calculate age in days, hours, and minutes
+    const ageInMillis = currentTime - creationTimestamp;
+    const ageInSeconds = Math.floor(ageInMillis / 1000);
+    const days = Math.floor(ageInSeconds / 86400);
+    const hours = Math.floor((ageInSeconds % 86400) / 3600);
+    const minutes = Math.floor((ageInSeconds % 3600) / 60);
+    
+    // Format age
+    const age = `${days}d ${hours}h ${minutes}m`;
+
+    // Get last restart time from containerStatuses
+    const lastContainerStatus = pod.status.containerStatuses[0]; // Assuming only one container
+    const lastRestartTime = lastContainerStatus.lastState.terminated ? 
+        new Date(lastContainerStatus.lastState.terminated.finishedAt) : null;
+
+    // Format last restart time
+    const formattedLastRestartTime = lastRestartTime ? lastRestartTime.toISOString() : "N/A";
+
+    // Calculate age since last restart
+    let ageSinceLastRestart = "N/A"; // Default value
+    if (lastRestartTime) {
+        const ageSinceLastRestartInMillis = currentTime - lastRestartTime;
+        const ageSinceLastRestartInSeconds = Math.floor(ageSinceLastRestartInMillis / 1000);
+        const lastRestartDays = Math.floor(ageSinceLastRestartInSeconds / 86400);
+        const lastRestartHours = Math.floor((ageSinceLastRestartInSeconds % 86400) / 3600);
+        const lastRestartMinutes = Math.floor((ageSinceLastRestartInSeconds % 3600) / 60);
+        
+        // Format age since last restart
+        ageSinceLastRestart = `${lastRestartDays}d ${lastRestartHours}h ${lastRestartMinutes}m`;
+    }
+
+    return { age, formattedLastRestartTime, ageSinceLastRestart };
+}
+
 // API endpoint to get a list of pods
 app.get('/api/pods', (req, res) => {
-    const command = `kubectl get pods -n ${NAMESPACE}`;
+    const command = `kubectl get pods -n ${NAMESPACE} -o json`;
 
     exec(command, (error, stdout, stderr) => {
         if (error) {
@@ -24,7 +62,30 @@ app.get('/api/pods', (req, res) => {
             res.status(500).json({ error: stderr });
             return;
         }
-        res.json({ data: stdout });
+
+        try {
+            const jsonOutput = JSON.parse(stdout); // Parse stdout to JSON
+            const selectedPods = jsonOutput.items
+            .filter(pod => 
+                (pod.metadata.annotations && Object.keys(pod.metadata.annotations).some(key => key.startsWith('flinkdeployment.flink.apache.org/')))
+                ||
+                (pod.metadata.labels && (pod.metadata.labels.component === 'taskmanager'))
+            ).map(pod => {
+                const { age, formattedLastRestartTime ,ageSinceLastRestart} = getPodDetails(pod);
+                return {
+                    name: pod.metadata.name,
+                    status: pod.status.phase,
+                    num_restarts: pod.status.containerStatuses[0].restartCount,
+                    age,
+                    resources: pod.spec.containers[0].resources,
+                    ageSinceLastRestart
+                };
+            });
+            res.json({ pods: selectedPods }); // Return the selected pods
+        } catch (parseError) {
+            console.error(`JSON parse error: ${parseError}`);
+            res.status(500).json({ error: 'Failed to parse JSON' });
+        }
     });
 });
 
@@ -43,7 +104,6 @@ app.get('/api/cluster', (req, res) => {
             res.status(500).json({ error: stderr });
             return;
         }
-        console.log(stdout)
         const clusters = stdout.split('\n').map(line => line.replace('-rest', '')).filter(line => line.trim() !== '');
         res.json({ clusters });
     });
