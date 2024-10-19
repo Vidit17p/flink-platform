@@ -5,14 +5,17 @@ function Clusters() {
   const [clusters, setClusters] = useState([]);
   const [loading, setLoading] = useState(true);
 
+  // Get the BASE_URL from environment variables
+  const BASE_URL = process.env.BACKEND_BASE_URL || "http://localhost:3001"; // Fallback if not set
+
   useEffect(() => {
-    axios.get("http://localhost:3001/cluster")
+    axios.get(`${BASE_URL}/api/cluster`)
       .then(response => {
-        const data = response.data['clusters']
-        console.log(data)
+        const data = response.data['clusters'];
+        console.log(data);
         setClusters(data.map(name => ({
           name: name,
-          href: `http://127.0.0.1:3001/cluster/${encodeURIComponent(name)}`
+          href: `${BASE_URL}/api/cluster/${encodeURIComponent(name)}`
         })));
         setLoading(false);
       })
@@ -20,7 +23,7 @@ function Clusters() {
         console.error("Error fetching clusters:", error);
         setLoading(false);
       });
-  }, []);
+  }, [BASE_URL]); // Add BASE_URL as a dependency
 
   if (loading) {
     return <div className="spinner-border text-primary" role="status"><span className="sr-only">Loading...</span></div>;

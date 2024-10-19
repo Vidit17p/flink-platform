@@ -5,12 +5,12 @@ const port = 3001;
 const cors = require('cors');
 app.use(cors());
 
-// Define the base URL as a global variable
-const BASE_URL = "http://localhost:3001";
-const NAMESPACE = "flink";
+// Define the base URL and namespace from environment variables
+const BASE_URL = process.env.BACKEND_BASE_URL || "http://localhost:3001"; // fallback value
+const NAMESPACE = process.env.NAMESPACE || "flink";               // fallback value
 
 // API endpoint to get a list of pods
-app.get('/pods', (req, res) => {
+app.get('/api/pods', (req, res) => {
     const command = `kubectl get pods -n ${NAMESPACE}`;
 
     exec(command, (error, stdout, stderr) => {
@@ -29,7 +29,7 @@ app.get('/pods', (req, res) => {
 });
 
 // API endpoint to get a list of clusters
-app.get('/cluster', (req, res) => {
+app.get('/api/cluster', (req, res) => {
     const command = `kubectl get svc -n ${NAMESPACE} | grep 8081 | awk '{print $1}'`;
 
     exec(command, (error, stdout, stderr) => {
@@ -50,7 +50,7 @@ app.get('/cluster', (req, res) => {
 });
 
 // API endpoint to get Flink deployments
-app.get('/flink-dep', (req, res) => {
+app.get('/api/flink-dep', (req, res) => {
     const queryParams = req.query;
     let command;
 
@@ -64,7 +64,7 @@ app.get('/flink-dep', (req, res) => {
 
             in_status || in_spec || in_events {print}
         ' > output.txt && cat output.txt`;
-
+        
         exec(command, { maxBuffer: 1024 * 500 }, (error, stdout, stderr) => {
             if (error) {
                 console.error(`exec error: ${error}`);
