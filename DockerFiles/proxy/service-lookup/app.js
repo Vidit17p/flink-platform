@@ -91,21 +91,28 @@ app.get('/api/pods', (req, res) => {
 
 // API endpoint to get a list of clusters
 app.get('/api/cluster', (req, res) => {
-    const command = `kubectl get svc -n ${NAMESPACE} | grep 8081 | awk '{print $1}'`;
+    const command = `kubectl get svc -n ${NAMESPACE} -o json`;
 
     exec(command, (error, stdout, stderr) => {
         if (error) {
             console.error(`exec error: ${error}`);
-            res.status(500).json({ error: error.message });
-            return;
+            return res.status(500).json({ error: error.message });
         }
         if (stderr) {
             console.error(`stderr: ${stderr}`);
-            res.status(500).json({ error: stderr });
-            return;
+            return res.status(500).json({ error: stderr });
         }
-        const clusters = stdout.split('\n').map(line => line.replace('-rest', '')).filter(line => line.trim() !== '');
-        res.json({ clusters });
+        try {
+            const jsonOutput = JSON.parse(stdout); // Parse the output as JSON
+            const selectedServices = jsonOutput.items
+                .filter(service => service.metadata.name && service.metadata.name.includes('-rest')) // Check if the name contains '-rest'
+                .map(service => service.metadata.name.replace('-rest','')); 
+
+            res.json({ clusters: selectedServices }); // Return the array of service names
+        } catch (parseError) {
+            console.error(`JSON parse error: ${parseError}`);
+            res.status(500).json({ error: 'Failed to parse JSON response from kubectl' });
+        }
     });
 });
 

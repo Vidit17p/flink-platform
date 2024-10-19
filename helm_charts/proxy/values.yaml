@@ -8,7 +8,7 @@ proxy:
   tolerations: {}
   extraEnv: 
     BASIC_USERNAME: flink
-    BASE_URL: http://localhost:8000  ## USED in NODEJS APP
+    BACKEND_BASE_URL: http://localhost:8000  ## USED in NODEJS APP
   extraSecretEnv:
     BASIC_PASSWORD: ChangeMe
   
