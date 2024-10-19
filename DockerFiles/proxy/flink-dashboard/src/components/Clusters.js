@@ -15,7 +15,7 @@ function Clusters() {
         console.log(data);
         setClusters(data.map(name => ({
           name: name,
-          href: `${BASE_URL}/api/cluster/${encodeURIComponent(name)}`
+          href: `${BASE_URL}/proxy/${encodeURIComponent(name)}`
         })));
         setLoading(false);
       })
