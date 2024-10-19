@@ -121,15 +121,7 @@ app.get('/api/flink-dep', (req, res) => {
     let command;
 
     if ('clusterName' in queryParams) {
-        command = `kubectl describe flinkdep ${queryParams['clusterName']} -n ${NAMESPACE} | awk '
-            /Status:/ && !status_printed {status_printed=1; in_status=1}
-            /Spec:/ && !spec_printed {spec_printed=1; in_spec=1}
-            /Events:/ && !events_printed {events_printed=1; in_events=1}
-
-            /^$/ {in_status=0; in_spec=0; in_events=0}
-
-            in_status || in_spec || in_events {print}
-        ' > output.txt && cat output.txt`;
+        command = `kubectl get flinkdep ${queryParams['clusterName']} -n ${NAMESPACE} -o json`;
         
         exec(command, { maxBuffer: 1024 * 500 }, (error, stdout, stderr) => {
             if (error) {
@@ -142,7 +134,13 @@ app.get('/api/flink-dep', (req, res) => {
                 res.status(500).json({ error: stderr });
                 return;
             }
-            res.json({ data: stdout });
+            try {
+                const jsonOutput = JSON.parse(stdout); // Parse the output as JSON
+                res.json(jsonOutput); // Return the array of service names
+            } catch (parseError) {
+                console.error(`JSON parse error: ${parseError}`);
+                res.status(500).json({ error: 'Failed to parse JSON response from kubectl' });
+            }
         });
     } else {
         command = `kubectl get flinkdep -n ${NAMESPACE} | awk '{print $1}' | tail -n +2`;

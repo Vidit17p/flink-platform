@@ -2,7 +2,7 @@ apiVersion: flink.apache.org/v1beta1
 kind: FlinkDeployment
 metadata:
   namespace: flink
-  name: pod-template-example-1
+  name: pod-template-example
 spec:
   image: flink:1.17
   flinkVersion: v1_17
