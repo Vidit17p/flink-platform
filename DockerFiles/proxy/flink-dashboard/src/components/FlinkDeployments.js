@@ -5,15 +5,16 @@ function FlinkDeployments() {
   const [deployments, setDeployments] = useState([]);
   const [loading, setLoading] = useState(true);
 
+  // Get the BASE_URL from environment variables
+  const BASE_URL = process.env.BACKEND_BASE_URL || "http://localhost:3001"; // Fallback if env var is not set
+
   useEffect(() => {
-    axios.get("http://localhost:3001/flink-dep")
+    axios.get(`${BASE_URL}/api/flink-dep`)
       .then(response => {
-        const parser = new DOMParser();
-        console.log('response')
-        const data = response.data['deployments']
+        const data = response.data['deployments'];
         setDeployments(data.map(name => ({
           name: name,
-          href: `http://127.0.0.1:3001/flink-dep?clusterName=${encodeURIComponent(name)}`
+          href: `${BASE_URL}/api/flink-dep?clusterName=${encodeURIComponent(name)}`
         })));
         setLoading(false);
       })
@@ -21,7 +22,7 @@ function FlinkDeployments() {
         console.error("Error fetching deployments:", error);
         setLoading(false);
       });
-  }, []);
+  }, [BASE_URL]); // Add BASE_URL as a dependency
 
   if (loading) {
     return <div className="spinner-border text-primary" role="status"><span className="sr-only">Loading...</span></div>;
