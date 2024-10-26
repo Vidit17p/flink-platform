@@ -4,6 +4,7 @@ import axios from "axios";
 function Clusters() {
   const [clusters, setClusters] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [selectedCluster, setSelectedCluster] = useState(null);
 
   // Get the BASE_URL from environment variables
   const BASE_URL = process.env.BACKEND_BASE_URL || "http://localhost:3001"; // Fallback if not set
@@ -29,6 +30,10 @@ function Clusters() {
     return <div className="spinner-border text-primary" role="status"><span className="sr-only">Loading...</span></div>;
   }
 
+  const handleClusterClick = (cluster) => {
+    setSelectedCluster(cluster);
+  };
+
   return (
     <div className="Clusters">
       <h1>Flink Clusters</h1>
@@ -37,12 +42,24 @@ function Clusters() {
           <div className="col-md-4" key={index}>
             <div className="card mb-3">
               <div className="card-body">
-                <a href={cluster.href} className="btn btn-primary" target="_blank" rel="noopener noreferrer">{cluster.name}</a>
+                <button onClick={() => handleClusterClick(cluster)} className="btn btn-primary">{cluster.name}</button>
               </div>
             </div>
           </div>
         ))}
       </div>
+      {selectedCluster && (
+        <div className="embedded-cluster">
+          <h2>{selectedCluster.name}</h2>
+          <iframe
+            src={selectedCluster.href}
+            title={selectedCluster.name}
+            width="80%"
+            height="60%"
+            frameBorder="0"
+          />
+        </div>
+      )}
     </div>
   );
 }

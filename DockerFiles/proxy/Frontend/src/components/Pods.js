@@ -28,6 +28,19 @@ function Pods() {
       });
   }, [BASE_URL]);
 
+  const getStatusColor = (status) => {
+    switch (status.toUpperCase()) {
+      case 'PENDING':
+        return '#FFA500'; // Orange
+      case 'RUNNING':
+        return '#32CD32'; // Lime Green
+      case 'CRASHLOOPBACKOFF':
+        return '#FF0000'; // Red
+      default:
+        return 'inherit';
+    }
+  };
+
   if (loading) {
     return (
       <div className="text-center">
@@ -77,7 +90,7 @@ function Pods() {
             {pods.map((pod, index) => (
               <tr key={index} className="pod-row">
                 <td>{pod.name}</td>
-                <td>{pod.status}</td>
+                <td style={{ color: getStatusColor(pod.status) }}>{pod.status}</td>
                 <td>{pod.age}</td>
                 <td>{pod.resources.requests.cpu}</td>
                 <td>{pod.resources.requests.memory}</td>

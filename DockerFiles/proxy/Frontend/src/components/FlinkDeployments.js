@@ -7,7 +7,7 @@ const FlinkDeploymentDetails = ({ deploymentDetails }) => {
     return <div className="spinner-border text-primary" role="status"><span className="sr-only">Loading...</span></div>;
   }
 
-  const { metadata, spec, status } = deploymentDetails;
+  const { metadata, spec, status } = deploymentDetails.flinkDep;
   const job = spec?.job || {};
   const jobManager = spec?.jobManager || {};
   const taskManager = spec?.taskManager || {};
@@ -15,6 +15,23 @@ const FlinkDeploymentDetails = ({ deploymentDetails }) => {
   const jobStatus = status?.jobStatus || {};
   const reconciliationStatus = status?.reconciliationStatus || {};
   const lifecycleState = status?.lifecycleState || "Unknown";
+
+  const getJobStateColor = (state) => {
+    switch (state?.toLowerCase()) {
+      case 'created':
+        return '#007bff'; // Blue
+      case 'running':
+        return '#28a745'; // Green
+      case 'deployed':
+        return '#17a2b8'; // Cyan
+      case 'reconciled':
+        return '#ffc107'; // Yellow
+      case 'failed':
+        return '#dc3545'; // Red
+      default:
+        return 'inherit';
+    }
+  };
 
   return (
     <div>
@@ -30,7 +47,7 @@ const FlinkDeploymentDetails = ({ deploymentDetails }) => {
       <section>
         <h3>Job Information</h3>
         <p><strong>Job Name:</strong> {jobStatus.jobName || 'N/A'}</p>
-        <p><strong>Job State:</strong> {job.state}</p>
+        <p><strong>Job State:</strong> <span style={{ color: getJobStateColor(jobStatus.state), fontWeight: 'bold' }}>{jobStatus.state}</span></p>
         <p><strong>Job Parallelism:</strong> {job.parallelism}</p>
         <p><strong>Job JAR URI:</strong> {job.jarURI}</p>
         <p><strong>Start Time:</strong> {new Date(parseInt(jobStatus.startTime)).toLocaleString()}</p>
@@ -64,6 +81,11 @@ const FlinkDeploymentDetails = ({ deploymentDetails }) => {
         <p><strong>Last Reconciliation:</strong> {new Date(parseInt(reconciliationStatus.reconciliationTimestamp)).toLocaleString()}</p>
         <p><strong>Reconciliation State:</strong> {reconciliationStatus.state}</p>
         <p><strong>Observed Generation:</strong> {status.observedGeneration}</p>
+      </section>
+
+      <section>
+        <h3>Flink Events</h3>
+        <pre>{deploymentDetails.flinkEvents}</pre>
       </section>
     </div>
   );
