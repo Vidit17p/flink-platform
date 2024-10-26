@@ -121,26 +121,45 @@ app.get('/api/flink-dep', (req, res) => {
     let command;
 
     if ('clusterName' in queryParams) {
-        command = `kubectl get flinkdep ${queryParams['clusterName']} -n ${NAMESPACE} -o json`;
+        const flinkDepCommand = `kubectl get flinkdep ${queryParams['clusterName']} -n ${NAMESPACE} -o json`;
+        const flinkEventsCommand = `kubectl describe flinkdep ${queryParams['clusterName']} -n ${NAMESPACE}  | awk '/Events:/,EOF'`;
         
-        exec(command, { maxBuffer: 1024 * 500 }, (error, stdout, stderr) => {
-            if (error) {
-                console.error(`exec error: ${error}`);
-                res.status(500).json({ error: error.message });
-                return;
-            }
-            if (stderr) {
-                console.error(`stderr: ${stderr}`);
-                res.status(500).json({ error: stderr });
-                return;
-            }
-            try {
-                const jsonOutput = JSON.parse(stdout); // Parse the output as JSON
-                res.json(jsonOutput); // Return the array of service names
-            } catch (parseError) {
-                console.error(`JSON parse error: ${parseError}`);
-                res.status(500).json({ error: 'Failed to parse JSON response from kubectl' });
-            }
+        Promise.all([
+            new Promise((resolve, reject) => {
+                exec(flinkDepCommand, { maxBuffer: 1024 * 500 }, (error, stdout, stderr) => {
+                    if (error) {
+                        console.error(`exec error: ${error}`);
+                        reject(error);
+                    } else if (stderr) {
+                        console.error(`stderr: ${stderr}`);
+                        reject(new Error(stderr));
+                    } else {
+                        try {
+                            resolve(JSON.parse(stdout));
+                        } catch (parseError) {
+                            console.error(`JSON parse error: ${parseError}`);
+                            reject(parseError);
+                        }
+                    }
+                });
+            }),
+            new Promise((resolve, reject) => {
+                exec(flinkEventsCommand, { maxBuffer: 1024 * 500 }, (error, stdout, stderr) => {
+                    if (error) {
+                        console.error(`exec error: ${error}`);
+                        reject(error);
+                    } else if (stderr) {
+                        console.error(`stderr: ${stderr}`);
+                        reject(new Error(stderr));
+                    } else {
+                        resolve(stdout.trim()); // Treat as string, trim any leading/trailing whitespace
+                    }
+                });
+            })
+        ]).then(([flinkDepOutput, flinkEventsOutput]) => {
+            res.json({ flinkDep: flinkDepOutput, flinkEvents: flinkEventsOutput });
+        }).catch(error => {
+            res.status(500).json({ error: error.message });
         });
     } else {
         command = `kubectl get flinkdep -n ${NAMESPACE} | awk '{print $1}' | tail -n +2`;
@@ -163,5 +182,5 @@ app.get('/api/flink-dep', (req, res) => {
 });
 
 app.listen(port, () => {
-    console.log(`App listening at http://localhost:${port}`);
+    console.log(`App listening at ${BASE_URL}`);
 });
