@@ -7,7 +7,7 @@ function Clusters() {
   const [selectedCluster, setSelectedCluster] = useState(null);
 
   // Get the BASE_URL from environment variables
-  const BASE_URL = process.env.BACKEND_BASE_URL || "http://localhost:3001"; // Fallback if not set
+  const BASE_URL = process.env.REACT_APP_BASE_URL || "http://localhost:3001"; // Fallback if not set
 
   useEffect(() => {
     axios.get(`${BASE_URL}/api/cluster`)
@@ -16,7 +16,7 @@ function Clusters() {
         console.log(data);
         setClusters(data.map(name => ({
           name: name,
-          href: `${BASE_URL}/proxy/${encodeURIComponent(name)}`
+          href: `${BASE_URL}/proxy/${encodeURIComponent(name)}/`
         })));
         setLoading(false);
       })
@@ -54,9 +54,15 @@ function Clusters() {
           <iframe
             src={selectedCluster.href}
             title={selectedCluster.name}
-            width="80%"
-            height="60%"
+            width="100%"
+            height="90%"
             frameBorder="0"
+            style={{
+              minHeight: "80vh",
+              maxWidth: "1200px",
+              margin: "0 auto 2rem auto", // Added margin-bottom of 2rem
+              display: "block"
+            }}
           />
         </div>
       )}

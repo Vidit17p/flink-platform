@@ -7,7 +7,7 @@ function Pods() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  const BASE_URL = process.env.BACKEND_BASE_URL || "http://localhost:3001";
+  const BASE_URL = process.env.REACT_APP_BASE_URL;
 
   useEffect(() => {
     axios.get(`${BASE_URL}/api/pods`)

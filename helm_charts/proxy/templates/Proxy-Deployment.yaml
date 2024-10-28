@@ -17,8 +17,6 @@ spec:
       annotations:
         checksum/nginx_config: {{ .Values.proxy.nginx_config | toYaml | sha256sum }}
     spec:
-      serviceAccount: {{ .Values.proxy.flink_operator_ServiceAccount }}
-      serviceAccountName: {{ .Values.proxy.flink_operator_ServiceAccount }}
       volumes:
         - name: nginx-conf
           configMap:
@@ -31,8 +29,6 @@ spec:
         - containerPort: 80
         {{- if .Values.proxy.extraEnv }}
         env:
-          - name: NAMESPACE
-            value: {{ .Release.Namespace }}
           {{- range $key, $value := .Values.proxy.extraEnv }}
           - name: {{ $key | quote}}
             value: {{ $value | quote }}
@@ -45,8 +41,14 @@ spec:
         envFrom:
           - secretRef:
               name: proxy-secret
-        command: ["/bin/sh"]
-        args: ["-c", " ./run.sh"]
+        command:
+        - /bin/sh
+        - -c
+        - |
+          apt-get update -y && apt-get install -y apache2-utils 
+          envsubst < nginx-basic-auth.conf > /etc/nginx/conf.d/default.conf
+          htpasswd -c -b /etc/nginx/.htpasswd $BASIC_USERNAME $BASIC_PASSWORD
+          nginx -g "daemon off;"  
       {{- if .Values.proxy.affinity }}
       affinity: {{ .Values.proxy.affinity }}
       {{- end }}

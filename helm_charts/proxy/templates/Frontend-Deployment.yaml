@@ -1,0 +1,43 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: frontend
+  name: frontend
+  namespace: {{ .Release.Namespace }}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: "frontend"
+  template:
+    metadata:
+      labels:
+        app: frontend
+    spec:
+      containers:
+      - name: app
+        image: {{ .Values.frontend.image.repository }}:{{ .Values.frontend.image.tag }}
+        imagePullPolicy: {{ .Values.frontend.image.pullPolicy }}
+        ports:
+        - containerPort: 3000
+        {{- if .Values.frontend.extraEnv }}
+        env:
+          {{- range $key, $value := .Values.frontend.extraEnv }}
+          - name: {{ $key | quote}}
+            value: {{ $value | quote }}
+          {{- end }}
+        {{- end }}
+        envFrom:
+          - secretRef:
+              name: frontend-secret
+        command:
+        - /bin/sh
+        - -c
+        - sleep 1 && echo $BASE_URL && npm start
+      {{- if .Values.frontend.affinity }}
+      affinity: {{ .Values.frontend.affinity }}
+      {{- end }}
+      {{- if .Values.frontend.tolerations }}
+      tolerations: {{ .Values.frontend.tolerations }}
+      {{- end }}
