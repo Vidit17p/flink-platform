@@ -6,7 +6,7 @@ const cors = require('cors');
 app.use(cors());
 
 // Define the base URL and namespace from environment variables
-const BASE_URL = process.env.BACKEND_BASE_URL || "http://localhost:3001"; // fallback value
+const BASE_URL = process.env.BASE_URL || "http://localhost:3001"; // fallback value
 const NAMESPACE = process.env.NAMESPACE || "flink";               // fallback value
 
 function getPodDetails(pod) {

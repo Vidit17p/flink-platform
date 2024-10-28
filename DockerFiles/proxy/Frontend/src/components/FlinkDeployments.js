@@ -99,7 +99,7 @@ function FlinkDeployments() {
   const [modalVisible, setModalVisible] = useState(false);
   const [deploymentDetails, setDeploymentDetails] = useState(null);
 
-  const BASE_URL = process.env.BACKEND_BASE_URL || "http://localhost:3001"; // Fallback if env var is not set
+  const BASE_URL = process.env.REACT_APP_BASE_URL || "http://localhost:3001"; // Fallback if env var is not set
 
   useEffect(() => {
     fetchDeployments();

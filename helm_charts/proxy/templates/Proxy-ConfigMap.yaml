@@ -7,26 +7,29 @@ data:
   nginx-basic-auth.conf: |-
     server {
       listen 80 default_server;
-      
-      location / {
-        auth_basic             "Restricted";
-        auth_basic_user_file   .htpasswd;
-        proxy_pass             http://127.0.0.1:3000;
-        proxy_read_timeout     900;
-      }
 
-      location = /cluster {
+      # Route API calls to the backend
+      location /api/ {
+          resolver kube-dns.kube-system.svc.cluster.local;
           auth_basic             "Restricted";
           auth_basic_user_file   .htpasswd;
-          proxy_pass             http://127.0.0.1:3000/cluster;
+          proxy_pass             http://backend.{{ .Release.Namespace }}.svc.cluster.local:3001;
           proxy_read_timeout     900;
       }
 
-      location ~* /proxy/([^/]+)(/.*) {
-        resolver kube-dns.kube-system.svc.cluster.local;
-        auth_basic             "Restricted";
-        auth_basic_user_file   .htpasswd;
-        proxy_pass http://$1-rest.{{ .Release.Namespace }}.svc.cluster.local:8081$2;  
-        proxy_read_timeout     900;
+      location ~ ^/proxy/([^/]+)(/.*)?$ {
+          resolver kube-dns.kube-system.svc.cluster.local;
+          auth_basic             "Restricted";
+          auth_basic_user_file   .htpasswd;
+          proxy_pass http://$1-rest.{{ .Release.Namespace }}.svc.cluster.local:8081$2;
+          proxy_read_timeout     900;
+      }
+
+      # Default route to frontend
+      location / {
+          auth_basic             "Restricted";
+          auth_basic_user_file   .htpasswd;
+          proxy_pass             http://frontend.{{ .Release.Namespace }}.svc.cluster.local:3000;
+          proxy_read_timeout     900;
       }
     }

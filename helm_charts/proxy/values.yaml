@@ -3,13 +3,35 @@ proxy:
     repository: proxy
     tag: latest
     pullPolicy: IfNotPresent
-  flink_operator_ServiceAccount: flink-operator
   affinity: {}
   tolerations: {}
   extraEnv: 
-    BASIC_USERNAME: flink
-    BACKEND_BASE_URL: http://localhost:8000  ## USED in NODEJS APP
+    PLACE: HOLDER
   extraSecretEnv:
     BASIC_PASSWORD: ChangeMe
   
-    
+frontend:
+  image:
+    repository: frontend
+    tag: latest
+    pullPolicy: IfNotPresent
+  affinity: {}
+  tolerations: {}
+  extraEnv:
+    REACT_APP_BASE_URL: http://127.0.0.1:8000
+    NAMESPACE: flink 
+  extraSecretEnv: []
+
+
+backend:
+  image:
+    repository: backend
+    tag: latest
+    pullPolicy: IfNotPresent
+  flink_operator_ServiceAccount: flink-operator
+  affinity: {}
+  tolerations: {}
+  extraEnv:
+    BASE_URL: http://127.0.0.1:8000
+  extraSecretEnv:
+    NAMESPACE: flink
