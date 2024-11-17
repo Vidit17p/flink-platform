@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { Modal, Button } from "react-bootstrap"; // Assuming Bootstrap is used
+import { useSearchParams } from "react-router-dom";
 
 const FlinkDeploymentDetails = ({ deploymentDetails }) => {
   if (!deploymentDetails) {
@@ -98,12 +99,24 @@ function FlinkDeployments() {
   const [selectedDeployment, setSelectedDeployment] = useState(null);
   const [modalVisible, setModalVisible] = useState(false);
   const [deploymentDetails, setDeploymentDetails] = useState(null);
+  const [searchParams] = useSearchParams();
 
   const BASE_URL = process.env.REACT_APP_BASE_URL || "http://localhost:3001"; // Fallback if env var is not set
 
   useEffect(() => {
     fetchDeployments();
   }, [BASE_URL]);
+
+  useEffect(() => {
+    const deployment = searchParams.get('deployment');
+    if (deployment) {
+      const deploymentObj = {
+        name: deployment,
+        href: `${BASE_URL}/api/flink-dep?clusterName=${encodeURIComponent(deployment)}`
+      };
+      fetchDeploymentDetails(deploymentObj);
+    }
+  }, [searchParams, BASE_URL]);
 
   const fetchDeployments = () => {
     setLoading(true);
@@ -141,6 +154,10 @@ function FlinkDeployments() {
   const closeModal = () => {
     setModalVisible(false);
     setDeploymentDetails(null);
+    // Clear the deployment parameter from URL when closing modal
+    const newSearchParams = new URLSearchParams(searchParams);
+    newSearchParams.delete('deployment');
+    window.history.replaceState({}, '', `${window.location.pathname}${newSearchParams.toString() ? '?' + newSearchParams.toString() : ''}`);
   };
 
   if (loading) {

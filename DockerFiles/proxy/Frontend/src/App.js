@@ -5,6 +5,7 @@ import { Link } from 'react-router-dom';
 import Clusters from "./components/Clusters";
 import Pods from "./components/Pods";
 import FlinkDeployments from "./components/FlinkDeployments";
+import FlinkSessions from "./components/FlinkSession";
 import "./App.css";
 
 function App() {
@@ -24,6 +25,9 @@ function App() {
               <li className="nav-item">
                 <Link className="nav-link" to="/flink-deployments">Flink Deployments</Link>
               </li>
+              <li className="nav-item">
+                <Link className="nav-link" to="/flink-sessions">Flink Sessions</Link>
+              </li>
             </ul>
           </div>
         </nav>
@@ -33,6 +37,7 @@ function App() {
                 <Route path="/clusters" element={<Clusters />} />
                 <Route path="/pods" element={<Pods />} />
                 <Route path="/flink-deployments" element={<FlinkDeployments />} />
+                <Route path="/flink-sessions" element={<FlinkSessions />} />
             </Routes>
         </div>
       </div>
