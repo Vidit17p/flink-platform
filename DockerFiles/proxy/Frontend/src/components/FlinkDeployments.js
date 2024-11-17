@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
-import { Modal, Button } from "react-bootstrap"; // Assuming Bootstrap is used
+import { Modal, Button, ListGroup, ListGroupItem } from "react-bootstrap"; // Assuming Bootstrap is used
 import { useSearchParams } from "react-router-dom";
 
 const FlinkDeploymentDetails = ({ deploymentDetails }) => {
@@ -47,12 +47,29 @@ const FlinkDeploymentDetails = ({ deploymentDetails }) => {
 
       <section>
         <h3>Job Information</h3>
-        <p><strong>Job Name:</strong> {jobStatus.jobName || 'N/A'}</p>
-        <p><strong>Job State:</strong> <span style={{ color: getJobStateColor(jobStatus.state), fontWeight: 'bold' }}>{jobStatus.state}</span></p>
-        <p><strong>Job Parallelism:</strong> {job.parallelism}</p>
-        <p><strong>Job JAR URI:</strong> {job.jarURI}</p>
-        <p><strong>Start Time:</strong> {new Date(parseInt(jobStatus.startTime)).toLocaleString()}</p>
-        <p><strong>Job ID:</strong> {jobStatus.jobId}</p>
+        {deploymentDetails.sessionJobs ? (
+          <div>
+            <h4>Flink Session Jobs</h4>
+            <ListGroup>
+              {deploymentDetails.sessionJobs.map((sessionJob, index) => (
+                <ListGroupItem key={index}>
+                  <button className="btn btn-link p-0" onClick={() => window.location.href=`/flink-sessions?flinkSessions=${sessionJob}`}>
+                    {sessionJob}</button>
+                </ListGroupItem>
+              ))}
+            </ListGroup>
+          </div>
+        ) : (
+          <div>
+            <h4>Job Details</h4>
+            <p><strong>Job Name:</strong> {jobStatus.jobName || 'N/A'}</p>
+            <p><strong>Job State:</strong> <span style={{ color: getJobStateColor(jobStatus.state), fontWeight: 'bold' }}>{jobStatus.state}</span></p>
+            <p><strong>Job Parallelism:</strong> {job.parallelism}</p>
+            <p><strong>Job JAR URI:</strong> {job.jarURI}</p>
+            <p><strong>Start Time:</strong> {new Date(parseInt(jobStatus.startTime)).toLocaleString()}</p>
+            <p><strong>Job ID:</strong> {jobStatus.jobId}</p>
+          </div>
+        )}
       </section>
 
       <section>
@@ -143,7 +160,21 @@ function FlinkDeployments() {
     setDeploymentDetails(null); // Clear previous data before fetching new one
     axios.get(deployment.href)
       .then(response => {
-        setDeploymentDetails(response.data);
+        const deploymentData = response.data;
+        // If job is empty, fetch session jobs
+        if (!deploymentData.flinkDep.spec.job) {
+          axios.get(`${BASE_URL}/api/session-dep?clusterName=${deployment.name}`)
+            .then(sessionResponse => {
+              deploymentData.sessionJobs = sessionResponse.data.sessionJob;
+              setDeploymentDetails(deploymentData);
+            })
+            .catch(sessionError => {
+              console.error("Error fetching session jobs:", sessionError);
+              setDeploymentDetails(deploymentData); // Proceed with deployment data without session jobs
+            });
+        } else {
+          setDeploymentDetails(deploymentData);
+        }
       })
       .catch(error => {
         console.error("Error fetching deployment details:", error);

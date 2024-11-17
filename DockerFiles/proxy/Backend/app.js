@@ -181,7 +181,7 @@ app.get('/api/flink-dep', (req, res) => {
     }
 });
 
-// API endpoint to get Flink deployments
+// API endpoint to get Flink Session Jobs
 app.get('/api/flink-session', (req, res) => {
     const queryParams = req.query;
     let command;
@@ -244,6 +244,38 @@ app.get('/api/flink-session', (req, res) => {
             const sessions = stdout.split('\n').map(line => line.trim()).filter(line => line.trim() !== '');
             res.json({ sessions });
         });
+    }
+});
+
+
+// API endpoint to get mapping between flink session and deployment
+app.get('/api/session-dep', (req, res) => {
+    const command = `kubectl get flinksessionjob -n ${NAMESPACE} -o json`;
+    const queryParams = req.query;
+    if("clusterName" in queryParams){
+        exec(command, (error, stdout, stderr) => {
+            if (error) {
+                console.error(`exec error: ${error}`);
+                return res.status(500).json({ error: error.message });
+            }
+            if (stderr) {
+                console.error(`stderr: ${stderr}`);
+                return res.status(500).json({ error: stderr });
+            }
+            try {
+                const jsonOutput = JSON.parse(stdout); // Parse the output as JSON
+                const selectedServices = jsonOutput.items
+                    .filter(item => item.spec && item.spec.deploymentName === queryParams['clusterName'])
+                    .map(item => item.metadata.name);
+                res.json({ sessionJob: selectedServices }); // Return the array of service names
+            } catch (parseError) {
+                console.error(`JSON parse error: ${parseError}`);
+                res.status(500).json({ error: 'Failed to parse JSON response from kubectl' });
+            }
+        });
+    }
+    else{
+        res.status(400).json({ error: 'clusterName parameter is required' });
     }
 });
 
