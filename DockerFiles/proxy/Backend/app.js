@@ -181,6 +181,105 @@ app.get('/api/flink-dep', (req, res) => {
     }
 });
 
+// API endpoint to get Flink Session Jobs
+app.get('/api/flink-session', (req, res) => {
+    const queryParams = req.query;
+    let command;
+
+    if ('flinkSession' in queryParams) {
+        const flinkDepCommand = `kubectl get flinksessionjob ${queryParams['flinkSession']} -n ${NAMESPACE} -o json`;
+        const flinkEventsCommand = `kubectl describe flinksessionjob ${queryParams['flinkSession']} -n ${NAMESPACE}  | awk '/Events:/,EOF'`;
+        
+        Promise.all([
+            new Promise((resolve, reject) => {
+                exec(flinkDepCommand, { maxBuffer: 1024 * 500 }, (error, stdout, stderr) => {
+                    if (error) {
+                        console.error(`exec error: ${error}`);
+                        reject(error);
+                    } else if (stderr) {
+                        console.error(`stderr: ${stderr}`);
+                        reject(new Error(stderr));
+                    } else {
+                        try {
+                            resolve(JSON.parse(stdout));
+                        } catch (parseError) {
+                            console.error(`JSON parse error: ${parseError}`);
+                            reject(parseError);
+                        }
+                    }
+                });
+            }),
+            new Promise((resolve, reject) => {
+                exec(flinkEventsCommand, { maxBuffer: 1024 * 500 }, (error, stdout, stderr) => {
+                    if (error) {
+                        console.error(`exec error: ${error}`);
+                        reject(error);
+                    } else if (stderr) {
+                        console.error(`stderr: ${stderr}`);
+                        reject(new Error(stderr));
+                    } else {
+                        resolve(stdout.trim()); // Treat as string, trim any leading/trailing whitespace
+                    }
+                });
+            })
+        ]).then(([flinkDepOutput, flinkEventsOutput]) => {
+            res.json({ flinkDep: flinkDepOutput, flinkEvents: flinkEventsOutput });
+        }).catch(error => {
+            res.status(500).json({ error: error.message });
+        });
+    } else {
+        command = `kubectl get flinksessionjob -n ${NAMESPACE} | awk '{print $1}' | tail -n +2`;
+
+        exec(command, (error, stdout, stderr) => {
+            if (error) {
+                console.error(`exec error: ${error}`);
+                res.status(500).json({ error: error.message });
+                return;
+            }
+            if (stderr) {
+                console.error(`stderr: ${stderr}`);
+                res.status(500).json({ error: stderr });
+                return;
+            }
+            const sessions = stdout.split('\n').map(line => line.trim()).filter(line => line.trim() !== '');
+            res.json({ sessions });
+        });
+    }
+});
+
+
+// API endpoint to get mapping between flink session and deployment
+app.get('/api/session-dep', (req, res) => {
+    const command = `kubectl get flinksessionjob -n ${NAMESPACE} -o json`;
+    const queryParams = req.query;
+    if("clusterName" in queryParams){
+        exec(command, (error, stdout, stderr) => {
+            if (error) {
+                console.error(`exec error: ${error}`);
+                return res.status(500).json({ error: error.message });
+            }
+            if (stderr) {
+                console.error(`stderr: ${stderr}`);
+                return res.status(500).json({ error: stderr });
+            }
+            try {
+                const jsonOutput = JSON.parse(stdout); // Parse the output as JSON
+                const selectedServices = jsonOutput.items
+                    .filter(item => item.spec && item.spec.deploymentName === queryParams['clusterName'])
+                    .map(item => item.metadata.name);
+                res.json({ sessionJob: selectedServices }); // Return the array of service names
+            } catch (parseError) {
+                console.error(`JSON parse error: ${parseError}`);
+                res.status(500).json({ error: 'Failed to parse JSON response from kubectl' });
+            }
+        });
+    }
+    else{
+        res.status(400).json({ error: 'clusterName parameter is required' });
+    }
+});
+
+
 app.listen(port, () => {
     console.log(`App listening at ${BASE_URL}`);
 });

@@ -1,12 +1,12 @@
 proxy:
   image:
-    repository: proxy
-    tag: latest
+    repository: nginx
+    tag: 1.27
     pullPolicy: IfNotPresent
   affinity: {}
   tolerations: {}
   extraEnv: 
-    PLACE: HOLDER
+    BASIC_USERNAME: username
   extraSecretEnv:
     BASIC_PASSWORD: ChangeMe
   
