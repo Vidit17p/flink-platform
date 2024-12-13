@@ -1,0 +1,44 @@
+body {
+  background-color: #f8f9fa;
+}
+
+h1 {
+  color: #343a40;
+  margin-bottom: 20px;
+}
+
+.card {
+  transition: 0.3s;
+}
+
+.card:hover {
+  transform: scale(1.05);
+}
+
+pre {
+  white-space: pre-wrap;
+  word-wrap: break-word;
+}
+
+.navbar-brand {
+  font-size: 1.5rem;
+  font-weight: bold;
+}
+
+.spinner-border {
+  display: block;
+  margin: 20px auto;
+}
+
+footer {
+  margin-top: 20px;
+  padding: 10px;
+  background-color: #343a40;
+  color: white;
+  text-align: center;
+}
+
+.footer-link {
+  color: #007bff;
+  text-decoration: none;
+}
