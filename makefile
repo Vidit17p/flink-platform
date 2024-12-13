@@ -1,7 +1,7 @@
 .PHONY: build deploy
 
 # Default target
-all: build deploy load_examples
+all: build deploy load_examples port_forward
 
 # Build both frontend and backend Docker images
 build:
@@ -22,3 +22,6 @@ clean:
 load_examples:
 	kubectl apply -f helm_charts/Flink-Samples/FlinkDeployment.yaml -n flink
 	kubectl apply -f helm_charts/Flink-Samples/FlinkSession.yaml -n flink
+
+port_forward:
+	kubectl port-forward svc/proxy-svc 8000:80 -n flink
