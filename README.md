@@ -1,12 +1,8 @@
-# flink-platform
+# Flink-Platform
 A platform around official flink k8s operator for more funcationality
 
 ## Progress
-- Observability around flink clusters
-    - Pods status in flink namespace
-    - Link to flink cluster dashboard by forwarding it to service using ngnix reverse proxy
-    - List of Flink Deployments and Description of FlinkDep
-
+- Overall observability on pods ,flink clusters and flink sessions.  
 
 ## Features to cover
 - Development Environment
@@ -23,14 +19,8 @@ Official Flink k8s Operator
 
 [Installation Guide](https://nightlies.apache.org/flink/flink-kubernetes-operator-docs-main/docs/development/guide/#installing-the-operator-locally)   **Already included in helmfile    
 
-1. Build the Proxy Docker images under /DockerFiles/proxy folder using the following command
-    
-    ```
-    docker build -t proxy:latest ./DockerFiles/proxy
-    ```
+### Pre-requistes 
+- k8s cluster
+- [install helmfile](https://github.com/helmfile/helmfile) 
 
-2. Lastly install all the required things using the following command under helm_charts directory
-    
-    ```
-    helmfile apply
-    ```
+Use the make file to build images and deploy all the required dependencies and service in kubernetes.
