@@ -23,4 +23,9 @@ Official Flink k8s Operator
 - k8s cluster
 - [install helmfile](https://github.com/helmfile/helmfile) 
 
-Use the make file to build images and deploy all the required dependencies and service in kubernetes.
+Use the make file to build images and deploy all the required dependencies and services in kubernetes.
+
+<video width="640" height="360" controls>
+  <source src="./assets/make.mov" type="video/quicktime">
+  Your browser does not support the video tag.
+</video>
