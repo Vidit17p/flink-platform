@@ -11,7 +11,6 @@ releases:
     chart: flink-kubernetes-operator/flink-kubernetes-operator
     namespace: flink
     createNamespace: true
-    disableValidation: true
     version: v1.9.0
     wait: true
     values:
@@ -20,7 +19,6 @@ releases:
     chart: bitnami/minio
     namespace: flink
     createNamespace: true
-    disableValidation: true
     version: 14.7.2
     wait: true
     # values:
@@ -28,7 +26,6 @@ releases:
   - name: proxy
     chart: ./proxy/
     namespace: flink
-    disableValidation: true
     values:
       - ./proxy/values.yaml
     wait: true
